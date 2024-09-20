@@ -1,21 +1,35 @@
 const express = require("express")
-
 const dotenv = require("dotenv").config()
-
 const mongoose = require("mongoose")
-const connectToDB = require("./db")
+
+const authRoutes = require("./routes/authRoutes")
+const causeRoutes = require("./routes/causeRoutes")
+
+const path = require("path")
+
+const connectToDB = require("./db.js")
 
 const app = express()
 
-app.use(express.json())
+const PORT = process.env.PORT || 5000
 
 connectToDB()
 
-const PORT = process.env.PORT || 5000
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 
-mongoose.connect(`${process.env.MONGODB_URL}`)
-.then(()=> console.log("Database Connected...!"))
+app.set("view engine", "ejs")
+app.set("views", path.join(__dirname, "views"))
 
 app.listen(PORT, ()=>{
     console.log(`Server started Running on Port ${PORT}`)
+})
+
+app.use("/api", authRoutes)
+app.use("/api", causeRoutes)
+
+app.use((request, response) => {
+    response.status(404).json({
+        message: "Welcome to our server, this endpoint does not exist!"
+    })
 })
