@@ -16,11 +16,11 @@ const loginUser = async (request, response) => {
             return response.status(400).json({ error: "Invalid email or password"})
         }
 
-        const accessToken = jwt.sign({user}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "20m"})
+        const accessToken = jwt.sign( {user }, `${process.env.ACCESS_TOKEN}`, {expiresIn: "20m"})
 
         const refreshToken = jwt.sign({user}, `${process.env.REFRESH_TOKEN}`, {expiresIn: "1d"})
 
-        response.status(200).json({ message: "Login successful", accessToken})
+        response.status(200).json({ message: "Login successful", accessToken, user})
     }   catch (error) {
         response.status(500).json({ error: "Login failed, try again"})
     }
@@ -30,6 +30,10 @@ const loginUser = async (request, response) => {
 const registerUser = async (request, response) => {
     try {
         const { name, email, password, role } = request.body
+
+        if (!name || !email || !password || !role) {
+            return response.status(400).send("All fields (name, email, password, role) are required.")
+        }
 
         const existingUser = await User.findOne({ email })
         if (existingUser) {
@@ -48,7 +52,7 @@ const registerUser = async (request, response) => {
         await newUser.save()
 
         response.status(201).send("User registered successfully")
-    }   catch (error) {
+    } catch (error) {
         console.error(error)
         response.status(500).send("Server error")
     }

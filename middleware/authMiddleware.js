@@ -1,20 +1,50 @@
-const jwt = require("jsonwebtoken")
+const jwt = require('jsonwebtoken');
+const User = require("../models/User")
 
-const authenticateJWT = (request, response, next) => {
-    const token = request.header("Authorization") && request.header("Authorization").split(" ")[1]
+const authenticateJWT = async (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
 
-    if (!token) {
-        return response.status(401).json({ error: "Access denied. No token provided."})
+    if (!authHeader) {
+        return res.status(401).json({ message: "Access Denied!" })
+    }
+    const authHeaderParts = authHeader.split(" ")
+
+    if (authHeaderParts.length !== 2) {
+            return res.status(401).json({ message: "Invalid Authorization header format" })
     }
 
-    try {
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN)
-        request.user = decoded
+    const token = authHeaderParts[1];
 
-        next()
-    }   catch (error) {
-        response.status(400).json({ error: "Invalid token"})
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN)
+          
+    console.log({ decoded })
+
+    if (!decoded) {
+        return res.status(401).json({ message: "Invalid token" })
     }
+
+    const user = await User.findOne({ username: decoded.user.username })
+
+    if (!user) {
+        return res.status(400).json({ message: "User account not found!" })
+    }
+        
+    req.user = user; 
+
+    next();
+
+    } catch (error) {
+      return res.status(500).json({ message: error.message})
+    }
+  
 }
 
-module.exports = authenticateJWT
+
+
+module.exports = authenticateJWT;
+
+
+
+
+

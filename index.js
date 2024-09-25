@@ -4,6 +4,7 @@ const mongoose = require("mongoose")
 
 const authRoutes = require("./routes/authRoutes")
 const causeRoutes = require("./routes/causeRoutes")
+const donationRoutes = require("./routes/donationRoutes.js")
 
 const path = require("path")
 
@@ -27,6 +28,7 @@ app.listen(PORT, ()=>{
 
 app.use("/api", authRoutes)
 app.use("/api", causeRoutes)
+app.use("/api", donationRoutes)
 
 app.use((request, response) => {
     response.status(404).json({
